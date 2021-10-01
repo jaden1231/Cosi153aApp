@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Text, View, StyleSheet, Image, Button, TextInput} from 'react-native';
+import { Text, View, StyleSheet, Image, Button, TextInput, Alert} from 'react-native';
 import Constants from 'expo-constants';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -82,7 +82,7 @@ function MainScreen  ({ navigation })  {
 </View>
 
   );
-};
+}
 function AboutScreen ({ navigation}) {
 return(
   <View style={{ flex:2,backgroundColor: "#F5F5DC", flexDirection: "column", justifyContent:"space-between", alignItems:"center"}} >
@@ -129,10 +129,7 @@ function OptionsScreen ({ navigation }) {
 <Button
 
    title="Dark Mode"
-   onPress={() =>
-
-     color = "black"
-   }
+   onPress={() => Alert.alert('Dark Mode Activated')}
   ></Button>
 </View>
 
