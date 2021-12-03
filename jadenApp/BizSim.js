@@ -1,50 +1,45 @@
 import React,  {useState, useEffect } from 'react';
-import { Text, View, StyleSheet, Image, Button, TextInput, Alert} from 'react-native';
+import { Text, View, StyleSheet, Image, Button, TextInput, Alert,FlatList} from 'react-native';
 import Constants from 'expo-constants';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 const Stack = createNativeStackNavigator();
 
-/*
-Ideas:
-1) Replace Buy Business Button with a flexbox
-containing images for each potential business you can
-buy at the moment, and a button beneath each to buy interval
-The business titles and their images are data pulled from a
-Google Docs I can write and update whenever I want to expand
-the game. An iterator will run down the list of Businesses
-avaiable as the game goes on and use two/three card slots
-at a time shifting down by one every milestone crossed($1 million,
-for example)
-2) International market will be another screen you unlock after a milestone,
-with additional businesses that open up. But now you can buy numberBusinesses
-from one country and sell in another. Currency exchange rates are real
-pulled from internet for that country. Country Selection is a map with links
-on it.
-3) An inventory of business you have, to make selling possible. Use async StorageKeys
-4) Businesses you own can scale up a certain number of times. Developed country Businesses
-scale up more than developing country, making buying from both for the purpose of selling
-viable
-5) As I said below, money counter should be async data so your progress is saved
-for when you come back
-6) As the money count grows, it'll have to be abbrievated to "$5.00 million" or $7.00 
-quadrillion to avoid numbers going off screen and have them make sense
-*/
 
 
 export default function App() {
-  const[moneyAmount, setMoneyAmount] = useState(0);
-  const[moneyPerSecond, setMoneyPerSecond] = useState(2);
-  const[numberBusinessesOwned, setNumberBusinessesOwned] = useState(0);
-  const[companyName, setCompanyName] = useState();
- //default price value of a business set at $20
-  const[defaultPrice,setDefaultPrice] = useState(20);
 
   const[myScreen, setMyScreen] = useState('Main');
 
-  const Timer_MS = 600;
-const MyStack = () => {
+//Dark Mode Constants and Function to set DarkMode
+/*const [mainPageBackgroundColor] = useState("lightgray");
+  const [aboutPageBackgroundColor] = useState("#F5F5DC");
+  const [optionsScreenBackgroundColor] = useState("lightblue");
+  const [darkMode, setDarkMode] = useState(false);
+
+
+function DarkMode(){
+    if(darkMode == false){
+    Alert.alert('Dark Mode Activated')
+    setDarkMode(true);
+  }
+  else{
+    setDarkMode(false);
+  }
+  } */
+
+   return(
+    <View style={styles.container}>
+    <MyStack/>
+ </View>
+  );
+
+
+
+
+}const MyStack = () => {
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -60,7 +55,66 @@ const MyStack = () => {
     </NavigationContainer>
   );
 };
-useEffect(() => {
+
+//NOTE: ADD AN ASYNC FUNCTION THAT STORES THE MONEYCOUNTER AMOUNT, SO IT KEEPS OFFLINE FOR WHEN YOU COME BACK
+
+
+
+
+
+
+
+
+
+function MainScreen  ({ navigation })  {
+  const[moneyAmount, setMoneyAmount] = useState(0);
+  const[moneyPerSecond, setMoneyPerSecond] = useState(2);
+  const Timer_MS = 600;
+  const[numberBusinessesOwned, setNumberBusinessesOwned] = useState(0);
+  const[companyName, setCompanyName] = useState();
+  const[defaultPrice,setDefaultPrice] = useState(20);
+//Turns out google docs API is pretty difficult to integrate into react native, takes lots of steps
+  const gDocsURL = "https://docs.google.com/document/d/1W5fna59AnsTiGUybGCmC_qZox0E3EfDDTXEa5zy_di8/edit";
+ const [gDocsApiResult, setGDocsApiResult] = useState([]);
+
+ const [showBusinesses, setShowBusinesses] = useState(true);
+
+
+
+ const offlineDATA = [
+ {
+  id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
+  title: 'First Item',
+  color: "red",
+  imageurl:"https://img.imageboss.me/fourwinds/width/425/dpr:2/s/files/1/2336/3219/products/shutterstock_336818993meyer.jpg?v=1614965965",
+  price: 20,
+  rateOfReturn:1.1,
+},
+{
+  id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
+  title: 'Second Item',
+  color: "blue",
+  imageurl:"https://media.dior.com/couture/ecommerce/media/catalog/product/9/e/1594849779_043J615A0589_C980_E08_GHC.jpg?imwidth=800",
+  price: 50,
+  rateOfReturn:1.4,
+},
+{
+  id: '58694a0f-3da1-471f-bd96-145571e29d72',
+  title: 'Third Item',
+  color: "black",
+  imageurl:"https://roarblogs.s3.amazonaws.com/borgata/casino/en/blog/wp-content/uploads/2020/01/28094359/image5-4.jpg",
+  price: 200,
+  rateOfReturn:1.7,
+},
+];
+
+const Item = ({ title }) => (
+  <View style={styles.item}>
+    <Text style={styles.title}>{title}</Text>
+  </View>
+);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       console.log('Logs every interval of Timer');
       moneyUpdate();
@@ -69,54 +123,37 @@ useEffect(() => {
     }, Timer_MS);
       return () => clearInterval(interval); // This represents the unmount function, in which you need to clear your interval to prevent memory leaks.
   }, [moneyAmount])
-//NOTE: ADD AN ASYNC FUNCTION THAT STORES THE MONEYCOUNTER AMOUNT, SO IT KEEPS OFFLINE FOR WHEN YOU COME BACK
 
-  return(
-    <View style={styles.container}>
-    <MyStack/>
- </View>
-  );
+async function fetchGithub(url) {
+   await fetch(url)
+     .then((apiResponse) => apiResponse.json())
+     .then((jsonResponse) => {
+       setGDocsApiResult(jsonResponse);
+     })
+     .catch((error) => {
+       console.error(error);
+     });
+ }
 
-function moneyUpdate(){
-setMoneyAmount(moneyAmount + moneyPerSecond);
-}
-//Supposed to update the moneycounter
-//when buy businesss pressed
-function moneyCounter(){
-  console.log(companyName);
-if(moneyAmount>=defaultPrice){
-  //The moneyPerSecond can't handle decimals at the moment,
-  //.toFixed(2) keeps tacking on two more decimals instead
-  //of doing its job
-  setMoneyPerSecond((moneyPerSecond*1.1/*(this #is the increase factor per business gained)*/)/*Math.pow(moneyPerSecond,2)*/);
-  setNumberBusinessesOwned(numberBusinessesOwned+1);
-  setMoneyAmount(moneyAmount-defaultPrice);
-  console.log(moneyPerSecond);
+ function renderBusiness(business) {
+   return (
+    /* <View style={{backgroundColor: "white",
+   padding: 10,
+   margin: 10,
+   marginRight: 30,}}>
+       <Text style={{fontSize:20,color: "black"}}>{business.item.title}</Text>
+     </View>*/
+     <View style={styles.businessBar}>
+   <Image
+        style={styles.businessImage}
+        source={business.item.imageurl}
+      />
+<Button
+    title = {business.item.title}
+    color = {business.item.color}
 
-}}
-
-
-
-
-
-function MainScreen  ({ navigation })  {
-  return (
-
-<View style={{ flex:2,backgroundColor: "lightgray", flexDirection: "column"}} >
-    <View style = {{flex:1, backgroundColor:"lightgray", flexDirection:"column", alignItems:"center"}}>
-    <TextInput
-    placeholder="Name Your Company"
-    onChangeText={setCompanyName}
-    />
-    </View>
-    <View style={{ flex:2,backgroundColor: "lightgray", flexDirection: "row", justifyContent:"center"}} >
-<Text style = {{fontSize:50, color:"#50C878"}}> ${moneyAmount.toFixed(2)} </Text>
-    </View>
-    <Button
-    title = "Buy Business"
-    color = "blue"
     onPress = {() =>
-      moneyCounter()
+      moneyCounter(business.item.price,business.item.rateOfReturn)
 
 
     }
@@ -124,17 +161,67 @@ function MainScreen  ({ navigation })  {
 
   >
     /></Button>
+     </View>
+   );
+ }
 
-     <View style={{ flex:3,backgroundColor: "lightgray", flexDirection: "column", alignItems:"center"}} >
-    <Text style = {{fontSize:20, color:"blue"}}>{numberBusinessesOwned} Businesses Owned</Text>
-     <Text style = {{fontSize:20}}>Invest in businesses to increase your money earned per second
+  function moneyUpdate(){
+setMoneyAmount(moneyAmount + moneyPerSecond);
+}
+//Supposed to update the moneycounter
+//when buy businesss pressed
+function moneyCounter(price,rateOfReturn){
+  console.log(companyName);
+if(moneyAmount>=price){
+  //The moneyPerSecond can't handle decimals at the moment,
+  //.toFixed(2) keeps tacking on two more decimals instead
+  //of doing its job
+  setMoneyPerSecond((moneyPerSecond*rateOfReturn/*(this #is the increase factor per business gained)*/)/*Math.pow(moneyPerSecond,2)*/);
+  setNumberBusinessesOwned(numberBusinessesOwned+1);
+  setMoneyAmount(moneyAmount-price);
+  //setDefaultPrice(defaultPrice*2);
+  console.log(moneyPerSecond);
+
+}}
+
+  return (
+
+<View style={styles.background} >
+    <View style = {styles.heading}>
+    <TextInput
+    placeholder="Name Your Company"
+    onChangeText={setCompanyName}
+    />
+    </View>
+    <View style={styles.moneyCounter} >
+<Text style = {styles.moneyText}> ${moneyAmount.toFixed(2)} </Text>
+    </View>
+
+
+     <View style={styles.businessCounter} >
+    <Text style = {styles.blueStandardText}>{numberBusinessesOwned} Businesses Owned</Text>
+     <Text style = {styles.standardText}>Invest in businesses to increase your money earned per second
 </Text>
+  {showBusinesses ?
+         <FlatList
+           /*data={gDocsApiResult}
+           keyExtractor={(item, index) => index.toString()}
+           renderItem={(item) => renderBusiness(item)}*/
+           horizontal={true}
+           data = {offlineDATA}
+           renderItem={(item) => renderBusiness(item)}
+           keyExtractor={item => item.id}
+
+       /> :
+     <View style={styles.emptyFlatList}>
+             <Text style={styles.standardText}>NONE</Text>
+     </View>
+         }
+     </View>
+     <View style={styles.spaceUnderFlatList} >
 
      </View>
-     <View style={{ flex:1, flexDirection: "row", alignItems:"flex-start"}} >
-
-     </View>
-    <View style={{ flex:2,backgroundColor: "lightgray", flexDirection: "row", justifyContent:"space-around"}} >
+    <View style={styles.changeScreenButtonSpace} >
      <Button
 
       title="About Page"
@@ -152,11 +239,11 @@ function MainScreen  ({ navigation })  {
       }
      ></Button>
      </View>
-      <View style={{ flex:3,backgroundColor: "lightgray", flexDirection: "row", }} >
+      <View style={styles.dollarsImage} >
       <Image source={{
                  uri: 'https://g.foolcdn.com/editorial/images/633894/stack-of-one-hundred-dollar-bills-cash-money-stimulus-invest-retire-getty.jpg',
                }}
-               style={{flex:1 }}/>
+               style={styles.dollarsImageFlex}/>
       </View>
 </View>
 
@@ -164,21 +251,21 @@ function MainScreen  ({ navigation })  {
 }
 function AboutScreen ({ navigation}) {
 return(
-  <View style={{ flex:2,backgroundColor: "#F5F5DC", flexDirection: "column", justifyContent:"space-between", alignItems:"center"}} >
-  <View style={{ flex:1,backgroundColor: "#F5F5DC", flexDirection: "row"}} >
+  <View style={styles.aboutScreenContainer} >
+  <View style={styles.aboutScreenHeading} >
 
-    <Text style = {{fontSize:20}}> Tutorial </Text>
+    <Text style = {styles.standardText}> Tutorial </Text>
 
 
   </View>
-  <View style={{ flex:2,backgroundColor: "#F5F5DC", flexDirection: "row", justifyContent:"Space-around"}} >
+  <View style={styles.tutorialTextBox} >
 
 
-    <Text style = {{fontSize:12}}> You own a company! Buy businesses to make your income grow faster. Cool features to come, different types of businesses,
+    <Text style = {styles.smallStandardText}> You own a company! Buy businesses to make your income grow faster. Cool features to come, different types of businesses,
     or even a forex market, so I could practice using data from websites to get live exchange rates of currencies in different countries!</Text>
 
   </View>
-  <View style={{ flex:2,backgroundColor: "#F5F5DC", flexDirection: "row", alignItems:"flex-start"}} >
+  <View style={styles.aboutPageBackButton} >
 
       <Button
 
@@ -189,12 +276,12 @@ return(
        }
       ></Button>
     </View>
-    <View style = {{flex:1, backgroundColor:"white", flexDirection:"row", justifyContent:"flex-start"}}>
+    <View style = {styles.additionalIdeasBox}>
     <TextInput
     placeholder="Add any additional ideas here"
     />
     </View>
-    <View style = {{flex:2, flexDirection:"row", justifyContent:"flex-start", alignItems:"center"}}>
+    <View style = {styles.aboutPageFooter}>
 
     </View>
   </View>
@@ -203,18 +290,18 @@ return(
 function OptionsScreen ({ navigation }) {
 
   return(
-  <View style={{ flex:2,backgroundColor: "lightblue", flexDirection: "column", justifyContent:"center"}} >
+  <View style={styles.optionsScreenBackground} >
 
-<View style={{ flex:2,backgroundColor: "lightblue", flexDirection: "column", justifyContent:"center"}} >
+<View style={styles.optionsScreenDarkModeButton} >
 <Button
 
    title="Dark Mode"
-   onPress={() => Alert.alert('Dark Mode Activated')}
+   onPress={() => DarkMode()}
   ></Button>
 </View>
 
 
-  <View style={{ flex:2,backgroundColor: "lightblue", flexDirection: "column", justifyContent:"center"}} >
+  <View style={styles.optionsScreenBackButton} >
   <Button
 
    title="Back"
@@ -224,14 +311,16 @@ function OptionsScreen ({ navigation }) {
    }
   ></Button>
   </View>
-  <View style = {{flex:3, flexDirection:"row", justifyContent:"flex-start", alignItems:"center"}}>
+  <View style = {styles.optionsScreenFooter}>
 
   </View>
 
   </View>
   )}
-}
+
+
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -239,6 +328,159 @@ const styles = StyleSheet.create({
     backgroundColor: '#ecf0f1',
     margin:0,
     borderWidth:0,
+  },
+  item: {
+    backgroundColor: '#f9c2ff',
+    padding: 20,
+    marginVertical: 8,
+    marginHorizontal: 16,
+  },
+  title: {
+    fontSize: 32,
+  },
+  background:{
+  flex:2,
+  backgroundColor: "lightgray",
+  flexDirection: "column"
+  },
+
+heading:{
+flex:1,
+backgroundColor:"lightgray",
+flexDirection:"column",
+alignItems:"center"
+},
+
+moneyCounter:{
+flex:2,
+backgroundColor: "lightgray",
+flexDirection: "row",
+justifyContent:"center"
+},
+
+businessCounter:{
+flex:4,
+backgroundColor: "lightgray",
+flexDirection: "column",
+alignItems:"center"
+ },
+
+ emptyFlatList:{
+backgroundColor: "lightgray",
+ padding: 10
+ },
+
+ spaceUnderFlatList:{
+  flex:1,
+  flexDirection: "row",
+  alignItems:"flex-start"
+  },
+
+  changeScreenButtonSpace:{
+  flex:2,
+  backgroundColor: "lightgray",
+  flexDirection: "row",
+  justifyContent:"space-around"
+  },
+
+  dollarsImage:{
+  flex:3,
+  backgroundColor: "lightgray",
+  flexDirection: "row",
+  },
+
+  dollarsImageFlex:{
+    flex:1
+    },
+
+  businessBar:{
+padding: 0,
+margin: 10,
+marginRight: 30,
+},
+  businessImage:{
+    height:50
+  },
+  blueStandardText:{
+    fontSize:20, color:"blue"
+  },
+  standardText:{
+    fontSize:20
+  },
+  smallStandardText:{
+    fontSize:12
+  },
+  moneyText:{
+    fontSize:50, color:"#50C878"
+  },
+
+  aboutScreenContainer:{
+  flex:2,
+  backgroundColor: "#F5F5DC",
+  flexDirection: "column",
+  justifyContent:"space-between",
+  alignItems:"center"
+  },
+
+  aboutScreenHeading:{
+  flex:1,
+  backgroundColor: "#F5F5DC",
+  flexDirection: "row"
+  },
+
+  tutorialTextBox:{
+  flex:2,
+  backgroundColor: "#F5F5DC",
+  flexDirection: "row",
+  justifyContent:"Space-around"
+  },
+
+  aboutPageBackButton:{
+  flex:2,
+  backgroundColor: "#F5F5DC",
+  flexDirection: "row",
+  alignItems:"flex-start"
+  },
+
+additionalIdeasBox:{
+  flex:1,
+  backgroundColor:"white",
+  flexDirection:"row",
+  justifyContent:"flex-start"
+  },
+
+aboutPageFooter:{
+  flex:2,
+  flexDirection:"row",
+  justifyContent:"flex-start",
+  alignItems:"center"
+  },
+
+  optionsScreenBackground:{
+    flex:2,
+    backgroundColor: /*darkMode?"#1a1a1a":*/"lightblue",
+    flexDirection: "column",
+    justifyContent:"center"
+    },
+
+  optionsScreenDarkModeButton:{
+  flex:2,
+  backgroundColor: "lightblue",
+  flexDirection: "column",
+  justifyContent:"center"
+  },
+
+  optionsScreenBackButton:{
+  flex:2,
+  backgroundColor: "lightblue",
+  flexDirection: "column",
+  justifyContent:"center"
+  },
+
+  optionsScreenFooter:{
+  flex:3, flexDirection:"row",
+  justifyContent:"flex-start",
+  alignItems:"center"
   },
 
 });
